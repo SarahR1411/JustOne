@@ -1,0 +1,11 @@
+{
+    "name": "justone",
+    "version": "1.0.0",
+    "scripts": {
+      "start": "node src/game.js"
+    },
+    "dependencies": {
+      "prompt-sync": "^4.2.0",
+      "chalk": "^4.1.2"
+    }
+  }
