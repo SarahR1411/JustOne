@@ -84,7 +84,7 @@
     const fetch = require('node-fetch');
     
     async function isWordValid(word) {
-        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const response = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/${word}');
         return response.ok;
     }
     
@@ -92,7 +92,7 @@
         for (let i = 1; i <= 4; i++) {
             for (let j = i + 1; j <= 4; j++) {
                 if (CLUES[`p${i}`] === CLUES[`p${j}`]) {
-                    return { status: false, problem: `Player ${i}, re-enter clue that isn't the same as others.` };
+                    return { status: false, problem: "Player ${i}, re-enter clue that isn't the same as others." };
                 }
             }
         }
@@ -101,8 +101,8 @@
     
     function MYSTERY_WORD(CLUES, mysteryWord) {
         for (let i = 1; i <= 4; i++) {
-            if (CLUES[`p${i}`] === mysteryWord) {
-                return { status: false, problem: `Player ${i}, re-enter clue that isn't the same as the Mystery Word.` };
+            if (CLUES['p${i}'] === mysteryWord) {
+                return { status: false, problem: "Player ${i}, re-enter clue that isn't the same as the Mystery Word." };
             }
         }
         return { status: true };
@@ -110,7 +110,7 @@
     
     function FAMILY(CLUES, mysteryWord) {
         for (let i = 1; i <= 4; i++) {
-            let clue = CLUES[`p${i}`];
+            let clue = CLUES['p${i}'];
             let stemmer = natural.PorterStemmer;
             
             if (
@@ -118,7 +118,7 @@
                 clue.endsWith(mysteryWord.slice(-3)) ||
                 stemmer.stem(clue) === stemmer.stem(mysteryWord)
             ) {
-                return { status: false, problem: `Player ${i}, re-enter clue that isn't of the same family as the Mystery Word.` };
+                return { status: false, problem: "Player ${i}, re-enter clue that isn't of the same family as the Mystery Word." };
             }
         }
         return { status: true };
@@ -126,9 +126,9 @@
     
     async function EXISTS(CLUES) {
         for (let i = 1; i <= 4; i++) {
-            let exists = await isWordValid(CLUES[`p${i}`]);
+            let exists = await isWordValid(CLUES['p${i}']);
             if (!exists) {
-                return { status: false, problem: `Player ${i}, re-enter clue that is a word that exists.` };
+                return { status: false, problem: "Player ${i}, re-enter clue that is a word that exists." };
             }
         }
         return { status: true };
@@ -136,8 +136,8 @@
     
     function PHONETICALLY_SAME(CLUES, mysteryWord) {
         for (let i = 1; i <= 4; i++) {
-            if (natural.Metaphone.compare(CLUES[`p${i}`], mysteryWord)) {
-                return { status: false, problem: `Player ${i}, re-enter clue that isn't phonetically the same as the Mystery Word.` };
+            if (natural.Metaphone.compare(CLUES["p${i}"], mysteryWord)) {
+                return { status: false, problem: "Player ${i}, re-enter clue that isn't phonetically the same as the Mystery Word." };
             }
         }
         return { status: true };
