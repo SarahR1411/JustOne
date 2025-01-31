@@ -78,91 +78,91 @@
         // return FALSE, problem
     //}
     // return TRUE
+// voilaaaa
+{
+const natural = require('natural');
+const fetch = require('node-fetch');
 
+async function isWordValid(word) {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+    return response.ok;
+}
 
-    const natural = require('natural');
-    const fetch = require('node-fetch');
-    
-    async function isWordValid(word) {
-        const response = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/${word}');
-        return response.ok;
-    }
-    
-    function EQUALS(CLUES) {
-        for (let i = 1; i <= 4; i++) {
-            for (let j = i + 1; j <= 4; j++) {
-                if (CLUES[`p${i}`] === CLUES[`p${j}`]) {
-                    return { status: false, problem: "Player ${i}, re-enter clue that isn't the same as others." };
-                }
+function EQUALS(CLUES) {
+    for (let i = 1; i <= 4; i++) {
+        for (let j = i + 1; j <= 4; j++) {
+            if (CLUES[`p${i}`] === CLUES[`p${j}`]) {
+                return { status: false, problem: `Player ${i}, re-enter clue that isn't the same as others.` };
             }
         }
-        return { status: true };
     }
-    
-    function MYSTERY_WORD(CLUES, mysteryWord) {
-        for (let i = 1; i <= 4; i++) {
-            if (CLUES['p${i}'] === mysteryWord) {
-                return { status: false, problem: "Player ${i}, re-enter clue that isn't the same as the Mystery Word." };
-            }
+    return { status: true };
+}
+
+function MYSTERY_WORD(CLUES, mysteryWord) {
+    for (let i = 1; i <= 4; i++) {
+        if (CLUES[`p${i}`] === mysteryWord) {
+            return { status: false, problem: `Player ${i}, re-enter clue that isn't the same as the Mystery Word.` };
         }
-        return { status: true };
     }
-    
-    function FAMILY(CLUES, mysteryWord) {
-        for (let i = 1; i <= 4; i++) {
-            let clue = CLUES['p${i}'];
-            let stemmer = natural.PorterStemmer;
-            
-            if (
-                clue.startsWith(mysteryWord.substring(0, 3)) ||
-                clue.endsWith(mysteryWord.slice(-3)) ||
-                stemmer.stem(clue) === stemmer.stem(mysteryWord)
-            ) {
-                return { status: false, problem: "Player ${i}, re-enter clue that isn't of the same family as the Mystery Word." };
-            }
+    return { status: true };
+}
+
+function FAMILY(CLUES, mysteryWord) {
+    for (let i = 1; i <= 4; i++) {
+        let clue = CLUES[`p${i}`];
+        let stemmer = natural.PorterStemmer;
+        
+        if (
+            clue.startsWith(mysteryWord.substring(0, 3)) ||
+            clue.endsWith(mysteryWord.slice(-3)) ||
+            stemmer.stem(clue) === stemmer.stem(mysteryWord)
+        ) {
+            return { status: false, problem: `Player ${i}, re-enter clue that isn't of the same family as the Mystery Word.` };
         }
-        return { status: true };
     }
-    
-    async function EXISTS(CLUES) {
-        for (let i = 1; i <= 4; i++) {
-            let exists = await isWordValid(CLUES['p${i}']);
-            if (!exists) {
-                return { status: false, problem: "Player ${i}, re-enter clue that is a word that exists." };
-            }
+    return { status: true };
+}
+
+async function EXISTS(CLUES) {
+    for (let i = 1; i <= 4; i++) {
+        let exists = await isWordValid(CLUES[`p${i}`]);
+        if (!exists) {
+            return { status: false, problem: `Player ${i}, re-enter clue that is a word that exists.` };
         }
-        return { status: true };
     }
-    
-    function PHONETICALLY_SAME(CLUES, mysteryWord) {
-        for (let i = 1; i <= 4; i++) {
-            if (natural.Metaphone.compare(CLUES["p${i}"], mysteryWord)) {
-                return { status: false, problem: "Player ${i}, re-enter clue that isn't phonetically the same as the Mystery Word." };
-            }
+    return { status: true };
+}
+
+function PHONETICALLY_SAME(CLUES, mysteryWord) {
+    for (let i = 1; i <= 4; i++) {
+        if (natural.Metaphone.compare(CLUES[`p${i}`], mysteryWord)) {
+            return { status: false, problem: `Player ${i}, re-enter clue that isn't phonetically the same as the Mystery Word.` };
         }
-        return { status: true };
     }
-    
-    async function validate(CLUES, mysteryWord) {
-        let checks = [
-            EQUALS(CLUES),
-            MYSTERY_WORD(CLUES, mysteryWord),
-            FAMILY(CLUES, mysteryWord),
-            await EXISTS(CLUES),
-            PHONETICALLY_SAME(CLUES, mysteryWord)
-        ];
-    
-        for (let check of checks) {
-            if (!check.status) {
-                return { valid: false, problem: check.problem };
-            }
+    return { status: true };
+}
+
+async function validate(CLUES, mysteryWord) {
+    let checks = [
+        EQUALS(CLUES),
+        MYSTERY_WORD(CLUES, mysteryWord),
+        FAMILY(CLUES, mysteryWord),
+        await EXISTS(CLUES),
+        PHONETICALLY_SAME(CLUES, mysteryWord)
+    ];
+
+    for (let check of checks) {
+        if (!check.status) {
+            return { valid: false, problem: check.problem };
         }
-        return { valid: true };
     }
-    
-    // Example usage
-    const CLUES = { p1: "clue1", p2: "clue2", p3: "clue3", p4: "clue4" };
-    const mysteryWord = "mystery";
-    
-    validate(CLUES, mysteryWord).then(result => console.log(result));
-    
+    return { valid: true };
+}
+
+// Example usage
+const CLUES = { p1: "clue1", p2: "clue2", p3: "clue3", p4: "clue4" };
+const mysteryWord = "mystery";
+
+validate(CLUES, mysteryWord).then(result => console.log(result));
+}

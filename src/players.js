@@ -38,7 +38,7 @@
 
 
 
-
+{
 const readline = require("readline-sync");
 const { validate } = require("./validate"); // Assuming validate.js contains the validation functions
 
@@ -109,3 +109,5 @@ for (let round = 1; round <= 5; round++) {
 }
 
 console.log("\nGame Over!");
+}
+
