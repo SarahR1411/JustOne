@@ -79,9 +79,10 @@
     //}
     // return TRUE
 // voilaaaa
-{
-const natural = require('natural');
-const fetch = require('node-fetch');
+
+import natural from 'natural'; // Import the 'natural' module
+import fetch from 'node-fetch';
+
 
 async function isWordValid(word) {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -109,14 +110,14 @@ function MYSTERY_WORD(CLUES, mysteryWord) {
 }
 
 function FAMILY(CLUES, mysteryWord) {
+    const stemmer = natural.PorterStemmer; // Ensure stemmer is correctly initialized
     for (let i = 1; i <= 4; i++) {
         let clue = CLUES[`p${i}`];
-        let stemmer = natural.PorterStemmer;
         
         if (
             clue.startsWith(mysteryWord.substring(0, 3)) ||
             clue.endsWith(mysteryWord.slice(-3)) ||
-            stemmer.stem(clue) === stemmer.stem(mysteryWord)
+            stemmer.stem(clue) === stemmer.stem(mysteryWord) // Correct way to use the stemmer
         ) {
             return { status: false, problem: `Player ${i}, re-enter clue that isn't of the same family as the Mystery Word.` };
         }
@@ -165,4 +166,3 @@ const CLUES = { p1: "clue1", p2: "clue2", p3: "clue3", p4: "clue4" };
 const mysteryWord = "mystery";
 
 validate(CLUES, mysteryWord).then(result => console.log(result));
-}

@@ -37,10 +37,8 @@
 //voilaaaaa
 
 
-
-{
-const readline = require("readline-sync");
-const { validate } = require("./validate"); // Assuming validate.js contains the validation functions
+import readlineSync from 'readline-sync'; // Import readline-sync as an ES module
+import { validate } from './validate.js'; // Assuming validate.js is in the same directory
 
 let players = ["p1", "p2", "p3", "p4"];
 let activeIndex = 0; // Tracks active player index
@@ -50,7 +48,7 @@ function switchActivePlayer() {
 }
 
 function getPlayerInput(promptText) {
-    return readline.question(promptText);
+    return readlineSync.question(promptText); // Use readlineSync to get input
 }
 
 async function playRound() {
@@ -109,5 +107,3 @@ for (let round = 1; round <= 5; round++) {
 }
 
 console.log("\nGame Over!");
-}
-
