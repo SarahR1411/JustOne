@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Path to the JSON file where game logs are stored.
+ * Path to the JSON file where game logs are stored
  */
 const LOG_FILE = path.join(__dirname, '../data/game_logs.json');
 

@@ -3,9 +3,9 @@ const fs = require('fs');
 const { shuffle } = require('lodash');
 
 /**
- * Loads all words from a text file (one per line), returning an array of unique words.
+ * Loads all words from a text file (one per line), returning an array of unique words
  *
- * @param {string} filePath - Path to the .txt file.
+ * @param {string} filePath - Path to the .txt file
  * @returns {string[]} - Array of words
  */
 function loadWordList(filePath) {
@@ -22,12 +22,12 @@ function loadWordList(filePath) {
 }
 
 /**
- * Selects a set of N random words from the provided array.
- * Doesn't remove them from the array nor require a Set.
+ * Selects a set of N random words from the provided array
+ * Doesn't remove them from the array nor require a Set
  * 
- * @param {string[]} words - Full array of words.
- * @param {number} count - How many random words to pick (default 5).
- * @returns {string[]} - The chosen words.
+ * @param {string[]} words - Full array of words
+ * @param {number} count - How many random words to pick (default 5)
+ * @returns {string[]} - The chosen words
  */
 function pickRandomWords(words, count = 5) {
   if (words.length < count) {

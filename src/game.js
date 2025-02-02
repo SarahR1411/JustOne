@@ -86,7 +86,7 @@ async function gameLoop() {
 //    3) Non-active players see it and give clues
 //    4) Validate those clues
 //    5) Active player guesses
-//    6) Scoring (WIN => keep, LOSE => discard next card, PASS => discard only this card).
+//    6) Scoring (WIN => keep, LOSE => discard next card, PASS => discard only this card)
 //
 async function playRound() {
   const activePlayer = getActivePlayer(gameState);

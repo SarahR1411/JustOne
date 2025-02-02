@@ -35,7 +35,7 @@ function rotateActivePlayer(gameState) {
 
 /**
  * Prompts each non-active player to enter a clue + clears console after each input
- * to hide the clues from other players (if you want that secrecy).
+ * to hide the clues from other players
  *
  * @param {object} activePlayer - The current active player object
  * @param {object[]} allPlayers - Array of all players
