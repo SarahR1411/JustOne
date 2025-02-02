@@ -83,7 +83,6 @@
 import natural from 'natural'; // Import the 'natural' module
 import fetch from 'node-fetch';
 
-
 async function isWordValid(word) {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
     return response.ok;
@@ -135,9 +134,13 @@ async function EXISTS(CLUES) {
     return { status: true };
 }
 
+// ✅ FIXED: Correctly use Metaphone processing
 function PHONETICALLY_SAME(CLUES, mysteryWord) {
     for (let i = 1; i <= 4; i++) {
-        if (natural.Metaphone.compare(CLUES[`p${i}`], mysteryWord)) {
+        const clueProcessed = natural.Metaphone.process(CLUES[`p${i}`]);
+        const mysteryWordProcessed = natural.Metaphone.process(mysteryWord);
+
+        if (clueProcessed === mysteryWordProcessed) {
             return { status: false, problem: `Player ${i}, re-enter clue that isn't phonetically the same as the Mystery Word.` };
         }
     }
