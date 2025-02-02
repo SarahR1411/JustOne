@@ -1,170 +1,126 @@
-// Clue validation
+const fetch = require('node-fetch');
+const porterStemmer = require('talisman/stemmers/porter');
+const metaphone = require('talisman/phonetics/metaphone');
 
-// Collect clue from each player in the form of: 
-//CLUES = {p1: "clue1", p2: "clue2", p3: "clue3", p4: "clue4"}
-// Validated = True
-// mysteryWord = "mysteryWord"
+/**
+ * EQUALS: no duplicate clues
+ */
+function EQUALS(CLUES) {
+  const cluesArr = Object.values(CLUES);
+  const unique = new Set(cluesArr);
+  if (unique.size !== cluesArr.length) {
+    return { status: false, problem: 'Duplicate clues detected!' };
+  }
+  return { status: true };
+}
 
-// function EQUALS(CLUES)
-    // EQUAL_CLUES = FALSE
-    // For each player from 1 to 4:
-        // If CLUES[i]==CLUES[j] (i!=j) 
-            // EQUAL_CLUES = TRUE
-            // problem = "Player [i], re-enter clue that isn't the same as others."
-    // return EQUAL_CLUES, problem
+/**
+ * MYSTERY_WORD: clue must not match the secret word exactly
+ */
+function MYSTERY_WORD(CLUES, mysteryWord) {
+  for (const [playerId, clue] of Object.entries(CLUES)) {
+    if (clue === mysteryWord) {
+      return {
+        status: false,
+        problem: `Player ${playerId} gave the Mystery Word itself. Not allowed!`
+      };
+    }
+  }
+  return { status: true };
+}
 
-// function MYSTERY_WORD(CLUES, mysteryWord)
-    // MYSTERY_WORD_CLUE = FALSE
-    // For each player from 1 to 4:
-        // If CLUES[i]==mysteryWord
-            // MYSTERY_WORD_CLUE = TRUE
-            // problem = "Player [i], re-enter clue that isn't the same as the Mystery Word."
-            // MYSTERY_WORD_CLUE = TRUE
-    // return MYSTERY_WORD_CLUE, problem
-    
-// function FAMILY(CLUES, mysteryWord)
-    // FAMILY_CLUE = FALSE
-    // For each player from 1 to 4:
-        // if (CLUES[i].startsWith(mysteryWord.substring(0, 3))) {
-            // FAMILY_CLUE = TRUE
-            // problem = "Player [i], re-enter clue that isn't of the same family as the Mystery Word."
-        //}
-        //if (CLUES[i].endsWith(mysteryWord.slice(-3))) {
-            // FAMILY_CLUE = TRUE
-            // problem = "Player [i], re-enter clue that isn't of the same family as the Mystery Word."
-        //}
-        //const natural = require('natural');
-        //const stemmer = natural.PorterStemmer;
-        //if (stemmer.stem(CLUES[i]) === stemmer.stem(mysteryWord)) {
-            // FAMILY_CLUE = TRUE
-            // problem = "Player [i], re-enter clue that isn't of the same family as the Mystery Word."
-        //}
-    // return FAMILY_CLUE, problem
+/**
+ * FAMILY: same start/end substring or same Porter stem
+ */
+function FAMILY(CLUES, mysteryWord) {
+  for (const [playerId, clue] of Object.entries(CLUES)) {
+    const shortCheck =
+      clue.length >= 3 &&
+      mysteryWord.length >= 3 &&
+      (clue.startsWith(mysteryWord.slice(0, 3)) ||
+       clue.endsWith(mysteryWord.slice(-3)));
 
-// function EXISTS(CLUES)
-    // EXISTS_CLUE = FALSE
-    // For each player from 1 to 4:
-        // async function isWordValid(word) {
-            // const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-            // return response.ok; // Returns true if word exists, false otherwise
-        //}
-        // isWordValid(CLUES[i]).then(EXISTS_CLUE = true); // true if word exists, false otherwise
-        // if (EXISTS_CLUE == false) {
-            // problem = "Player [i], re-enter clue that is a word that exists."
-        //}
-    // return EXISTS_CLUE, problem
+    const stemCheck = porterStemmer(clue) === porterStemmer(mysteryWord);
 
-// function PHONETICALLY_SAME(CLUES, mysteryWord)
-    // PHONETICALLY_SAME_CLUE = FALSE
-    // For each player from 1 to 4:
-        // const natural = require('natural');
-        // function isPhoneticallySame(word1, word2) {
-            // return natural.Metaphone.compare(word1, word2);
-        //}
-        // if (isPhoneticallySame(CLUES[i], mysteryWord)) {
-            // PHONETICALLY_SAME_CLUE = TRUE
-            // problem = "Player [i], re-enter clue that isn't phonetically the same as the Mystery Word."
-        //}
-    // return PHONETICALLY_SAME_CLUE, problem
+    if (shortCheck || stemCheck) {
+      return {
+        status: false,
+        problem: `Player ${playerId}, your clue is in the same family as the Mystery Word!`
+      };
+    }
+  }
+  return { status: true };
+}
 
-
-// function validate(CLUES, mysteryWord)
-    // EQUALS(CLUES)
-    // MYSTERY_WORD(CLUES, mysteryWord)
-    // FAMILY(CLUES, mysteryWord)
-    // EXISTS(CLUES)
-    // PHONETICALLY_SAME(CLUES, mysteryWord)
-    // if (EQUALS == TRUE || MYSTERY_WORD == TRUE || FAMILY == TRUE || EXISTS == TRUE || PHONETICALLY_SAME == TRUE) {
-        // return FALSE, problem
-    //}
-    // return TRUE
-// voilaaaa
-
-import natural from 'natural'; // Import the 'natural' module
-import fetch from 'node-fetch';
-import {collectClues, getMysteryWord} from './players.js';  // Import the collectClues and getMysteryWord functions from players.js;
-
+/**
+ * EXISTS: dictionary API check
+ */
+async function EXISTS(CLUES) {
+  for (const [playerId, clue] of Object.entries(CLUES)) {
+    const valid = await isWordValid(clue);
+    if (!valid) {
+      return {
+        status: false,
+        problem: `Player ${playerId}, "${clue}" doesn't appear to be a valid English word.`
+      };
+    }
+  }
+  return { status: true };
+}
 async function isWordValid(word) {
+  try {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
     return response.ok;
+  } catch (err) {
+    console.error('Error checking dictionary:', err);
+    return false;
+  }
 }
 
-function EQUALS(CLUES) {
-    const uniqueClues = new Set(Object.values(CLUES));
-    if (uniqueClues.size !== Object.keys(CLUES).length) {
-        return { status: false, problem: `Each player must enter a unique clue.` };
-    }
-    return { status: true };
-}
-
-function MYSTERY_WORD(CLUES, mysteryWord) {
-    for (let i = 1; i <= 4; i++) {
-        if (CLUES[`p${i}`] === mysteryWord) {
-            return { status: false, problem: `Player ${i}, re-enter clue that isn't the same as the Mystery Word.` };
-        }
-    }
-    return { status: true };
-}
-
-function FAMILY(CLUES, mysteryWord) {
-    const stemmer = natural.PorterStemmer; 
-    for (let i = 1; i <= 4; i++) {
-        let clue = CLUES[`p${i}`];
-        if (
-            (clue.length > 3 && mysteryWord.length > 3 && 
-                (clue.startsWith(mysteryWord.substring(0, 3)) || 
-                 clue.endsWith(mysteryWord.slice(-3)))) || 
-               stemmer.stem(clue) === stemmer.stem(mysteryWord) 
-        ) {
-            return { status: false, problem: `Player ${i}, re-enter clue that isn't of the same family as the Mystery Word.` };
-        }
-    }
-    return { status: true };
-}
-
-
-async function EXISTS(CLUES) {
-    for (let i = 1; i <= 4; i++) {
-        let exists = await isWordValid(CLUES[`p${i}`]);
-        if (!exists) {
-            return { status: false, problem: `Player ${i}, re-enter clue that is a word that exists.` };
-        }
-    }
-    return { status: true };
-}
-
-// ✅ FIXED: Correctly use Metaphone processing
+/**
+ * PHONETICALLY_SAME: compare Talisman Metaphone codes
+ */
 function PHONETICALLY_SAME(CLUES, mysteryWord) {
-    for (let i = 1; i <= 4; i++) {
-        const clueProcessed = natural.Metaphone.process(CLUES[`p${i}`]); 
-        const mysteryWordProcessed = natural.Metaphone.process(mysteryWord);
-
-        if (clueProcessed === mysteryWordProcessed) {
-            return { status: false, problem: `Player ${i}, re-enter clue that isn't phonetically the same as the Mystery Word.` };
-        }
+  const mwMetaphone = metaphone(mysteryWord);
+  for (const [playerId, clue] of Object.entries(CLUES)) {
+    const clueMetaphone = metaphone(clue);
+    if (clueMetaphone === mwMetaphone) {
+      return {
+        status: false,
+        problem: `Player ${playerId}, your clue is phonetically the same as the Mystery Word!`
+      };
     }
-    return { status: true };
+  }
+  return { status: true };
 }
 
-async function validate(CLUES, mysteryWord) {
-    let checks = await Promise.all([
-        EXISTS(CLUES), // ✅ Ensure async function is awaited here
-        Promise.resolve(EQUALS(CLUES)), 
-        Promise.resolve(MYSTERY_WORD(CLUES, mysteryWord)), 
-        Promise.resolve(FAMILY(CLUES, mysteryWord)), 
-        Promise.resolve(PHONETICALLY_SAME(CLUES, mysteryWord))
-    ]);
-
-    for (let check of checks) {
-        if (!check.status) {
-            return { valid: false, problem: check.problem };
-        }
+/**
+ * MAIN VALIDATION
+ */
+async function validateClues(CLUES, mysteryWord) {
+  // Synchronous checks
+  const syncChecks = [
+    EQUALS(CLUES),
+    MYSTERY_WORD(CLUES, mysteryWord),
+    FAMILY(CLUES, mysteryWord),
+    PHONETICALLY_SAME(CLUES, mysteryWord)
+  ];
+  for (const check of syncChecks) {
+    if (!check.status) {
+      return { validClues: null, invalidReason: check.problem };
     }
-    return { valid: true };
+  }
+
+  // Async check: EXISTS
+  const existsCheck = await EXISTS(CLUES);
+  if (!existsCheck.status) {
+    return { validClues: null, invalidReason: existsCheck.problem };
+  }
+
+  // All good
+  return { validClues: Object.values(CLUES), invalidReason: null };
 }
 
-// Example usage
-const CLUES = collectClues(); // Get clues from players
-const mysteryWord = getMysteryWord(); // Get the mystery word
-
-validate(CLUES, mysteryWord).then(result => console.log(result));
+module.exports = {
+  validateClues
+};
