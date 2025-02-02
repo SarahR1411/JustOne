@@ -44,11 +44,12 @@
 //voilaaaaa
 import cards from './cards.js';
 import readlineSync from 'readline-sync';
-import { validate } from './validate.js'; // Assuming validate.js is in the same directory
+import { validate } from './validation.js'; // Assuming validate.js is in the same directory
+
 const activePlayer = 'p1'; // Start with player 1 as active player
 
 // A function to collect clues from the other players
-async function collectClues(activePlayer) {
+export async function collectClues(activePlayer) {
     const clues = {}; // Empty clue dictionary
     const players = ['p1', 'p2', 'p3', 'p4'];
 
@@ -78,7 +79,7 @@ async function collectClues(activePlayer) {
 }
 
 // Function to get the mystery word based on the chosen card and number
-function getMysteryWord(cardIndex, chosenNumber) {
+export function getMysteryWord(cardIndex, chosenNumber) {
     // Ensure the index is valid and the chosen number is between 1 and 5
     if (chosenNumber < 1 || chosenNumber > 5 || cardIndex < 0 || cardIndex >= cards.length) {
         console.log("Invalid card or number!");
@@ -86,8 +87,8 @@ function getMysteryWord(cardIndex, chosenNumber) {
     }
 
     const card = cards[cardIndex];
-    mysteryWord = card.words[chosenNumber - 1];
-    return  // Adjust chosen number to 0-based index
+    const mysteryWord = card.words[chosenNumber - 1];
+    return  mysteryWord// Adjust chosen number to 0-based index
 }
 
 // Example of how to use this function in the game loop
@@ -103,36 +104,34 @@ async function activePlayerTurn() {
     } else {
         console.log("Mystery word could not be retrieved.");
     }
+
+    // Collect clues from other players
+    const clues = await collectClues(activePlayer);
+    return { clues, mysteryWord };
 }
 
 // Function to handle the round's validation and guessing
-async function round(mysteryWord) {
+async function round() {
     let isValid = false;
+    let turnResult; // Store the turn result here
 
-    // Collect clues and validate them
     while (!isValid) {
-        // Collect clues and get the guess
-        const { guess, clues } = await activePlayerTurn();
-
-        // Validate the clues
-        const result = await validate(clues, mysteryWord);
+        turnResult = await activePlayerTurn(); // Get clues & mystery word
+        const result = await validate(turnResult.clues, turnResult.mysteryWord);
 
         if (!result.valid) {
-            console.log(result.problem); // Display what went wrong (from validate.js)
-            continue; // Re-prompt the active player to provide new clues
-        } else {
-            isValid = true;
+            console.log(result.problem); 
+            continue; 
         }
+        
+        isValid = true;
     }
 
-    // STEP 3: Display all clues to the active player
-    console.log("\nClues provided by other players: ${collectClues(activePlayer)}");
+    console.log(`\nClues provided by other players:`, turnResult.clues);
 
-
-    // Active player guesses the mystery word
     const guess = readlineSync.question('Guess the mystery word: ');
 
-    if (guess === mysteryWord) {
+    if (guess === turnResult.mysteryWord) {
         console.log("You WIN!");
         return 'WIN';
     } else if (guess === '') {
@@ -144,17 +143,16 @@ async function round(mysteryWord) {
     }
 }
 
+
 // Function to switch to the next player
 function switchActivePlayer(currentPlayer) {
     const players = ['p1', 'p2', 'p3', 'p4'];
-    let currentIndex = players.indexOf(currentPlayer);
+    let nextIndex = (players.indexOf(currentPlayer) + 1) % players.length;
 
-    // Switch to the player on the left
-    let nextIndex = (currentIndex + 1) % players.length;
     return players[nextIndex];
 }
 
-
+//in game files
 /*Game loop for multiple rounds
 async function gameLoop(activePlayer) {
     while (true) {

@@ -83,7 +83,6 @@
 import natural from 'natural'; // Import the 'natural' module
 import fetch from 'node-fetch';
 import {collectClues, getMysteryWord} from './players.js';  // Import the collectClues and getMysteryWord functions from players.js;
-import { get } from 'http';
 
 async function isWordValid(word) {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -91,12 +90,9 @@ async function isWordValid(word) {
 }
 
 function EQUALS(CLUES) {
-    for (let i = 1; i <= 4; i++) {
-        for (let j = i + 1; j <= 4; j++) {
-            if (CLUES[`p${i}`] === CLUES[`p${j}`]) {
-                return { status: false, problem: `Player ${i}, re-enter clue that isn't the same as others.` };
-            }
-        }
+    const uniqueClues = new Set(Object.values(CLUES));
+    if (uniqueClues.size !== Object.keys(CLUES).length) {
+        return { status: false, problem: `Each player must enter a unique clue.` };
     }
     return { status: true };
 }
@@ -115,9 +111,10 @@ function FAMILY(CLUES, mysteryWord) {
     for (let i = 1; i <= 4; i++) {
         let clue = CLUES[`p${i}`];
         if (
-            clue.startsWith(mysteryWord.substring(0, 3)) ||
-            clue.endsWith(mysteryWord.slice(-3)) ||
-            stemmer.stem(clue) === stemmer.stem(mysteryWord) 
+            (clue.length > 3 && mysteryWord.length > 3 && 
+                (clue.startsWith(mysteryWord.substring(0, 3)) || 
+                 clue.endsWith(mysteryWord.slice(-3)))) || 
+               stemmer.stem(clue) === stemmer.stem(mysteryWord) 
         ) {
             return { status: false, problem: `Player ${i}, re-enter clue that isn't of the same family as the Mystery Word.` };
         }
@@ -150,13 +147,13 @@ function PHONETICALLY_SAME(CLUES, mysteryWord) {
 }
 
 async function validate(CLUES, mysteryWord) {
-    let checks = [
-        EQUALS(CLUES),
-        MYSTERY_WORD(CLUES, mysteryWord),
-        FAMILY(CLUES, mysteryWord),
-        await EXISTS(CLUES), // ✅ Ensure async function is awaited here
-        PHONETICALLY_SAME(CLUES, mysteryWord)
-    ];
+    let checks = await Promise.all([
+        EXISTS(CLUES), // ✅ Ensure async function is awaited here
+        Promise.resolve(EQUALS(CLUES)), 
+        Promise.resolve(MYSTERY_WORD(CLUES, mysteryWord)), 
+        Promise.resolve(FAMILY(CLUES, mysteryWord)), 
+        Promise.resolve(PHONETICALLY_SAME(CLUES, mysteryWord))
+    ]);
 
     for (let check of checks) {
         if (!check.status) {
