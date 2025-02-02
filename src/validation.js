@@ -82,6 +82,8 @@
 
 import natural from 'natural'; // Import the 'natural' module
 import fetch from 'node-fetch';
+import {collectClues, getMysteryWord} from './players.js';  // Import the collectClues and getMysteryWord functions from players.js;
+import { get } from 'http';
 
 async function isWordValid(word) {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -109,20 +111,20 @@ function MYSTERY_WORD(CLUES, mysteryWord) {
 }
 
 function FAMILY(CLUES, mysteryWord) {
-    const stemmer = natural.PorterStemmer; // Ensure stemmer is correctly initialized
+    const stemmer = natural.PorterStemmer; 
     for (let i = 1; i <= 4; i++) {
         let clue = CLUES[`p${i}`];
-        
         if (
             clue.startsWith(mysteryWord.substring(0, 3)) ||
             clue.endsWith(mysteryWord.slice(-3)) ||
-            stemmer.stem(clue) === stemmer.stem(mysteryWord) // Correct way to use the stemmer
+            stemmer.stem(clue) === stemmer.stem(mysteryWord) 
         ) {
             return { status: false, problem: `Player ${i}, re-enter clue that isn't of the same family as the Mystery Word.` };
         }
     }
     return { status: true };
 }
+
 
 async function EXISTS(CLUES) {
     for (let i = 1; i <= 4; i++) {
@@ -137,7 +139,7 @@ async function EXISTS(CLUES) {
 // ✅ FIXED: Correctly use Metaphone processing
 function PHONETICALLY_SAME(CLUES, mysteryWord) {
     for (let i = 1; i <= 4; i++) {
-        const clueProcessed = natural.Metaphone.process(CLUES[`p${i}`]);
+        const clueProcessed = natural.Metaphone.process(CLUES[`p${i}`]); 
         const mysteryWordProcessed = natural.Metaphone.process(mysteryWord);
 
         if (clueProcessed === mysteryWordProcessed) {
@@ -152,7 +154,7 @@ async function validate(CLUES, mysteryWord) {
         EQUALS(CLUES),
         MYSTERY_WORD(CLUES, mysteryWord),
         FAMILY(CLUES, mysteryWord),
-        await EXISTS(CLUES),
+        await EXISTS(CLUES), // ✅ Ensure async function is awaited here
         PHONETICALLY_SAME(CLUES, mysteryWord)
     ];
 
@@ -165,7 +167,7 @@ async function validate(CLUES, mysteryWord) {
 }
 
 // Example usage
-const CLUES = { p1: "clue1", p2: "clue2", p3: "clue3", p4: "clue4" };
-const mysteryWord = "mystery";
+const CLUES = collectClues(); // Get clues from players
+const mysteryWord = getMysteryWord(); // Get the mystery word
 
 validate(CLUES, mysteryWord).then(result => console.log(result));
