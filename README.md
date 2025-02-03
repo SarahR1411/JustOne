@@ -63,7 +63,7 @@ JustOne/
 
 1. Clone the repository:
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/SarahR1411/JustOne.git
    ```
 2. Navigate to the project folder:
    ```sh
