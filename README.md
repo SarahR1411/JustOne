@@ -22,6 +22,7 @@ JustOne/
 ```
 
 ###**Pre-requisite**
+
 Before `npm start` make sure to type the bash command `npm install` to make sure all dependencies and modules are correctly installed. This part is essential if you want the game to run properly. 
 
 ### **Folders and Files**
