@@ -11,7 +11,7 @@ const {
   logRound,
   generateFinalReport
 } = require('./logger'); 
-const prompt = require('prompt-sync')();
+const prompt = require('prompt-sync')({ sigint: true });
 
 const CONFIG = {
   TOTAL_PLAYERS: 5,
@@ -171,12 +171,25 @@ function selectMysteryWord(cardWords) {
   console.log('\nThere are 5 hidden words on the “card” (positions 1-5).');
 
   let choice;
-  do {
-    choice = parseInt(prompt('Choose a word position (1-5): '));
-  } while (isNaN(choice) || choice < 1 || choice > 5);
+  while (true) {
+    const input = prompt('Choose a word position (1-5): ');
+    // If the user pressed Ctrl+C, input will be null
+    if (input === null) {
+      console.log('Input cancelled. Exiting the game...');
+      process.exit(0);  // Exits the process. Alternatively, you could throw an error or handle it differently.
+    }
+    
+    choice = parseInt(input);
+    if (!isNaN(choice) && choice >= 1 && choice <= 5) {
+      break;
+    } else {
+      console.log('Invalid input. Please enter a number between 1 and 5.');
+    }
+  }
 
   return cardWords[choice - 1];
 }
+
 
 //
 // 7) REVEAL THE WORD TO NON-ACTIVE PLAYERS

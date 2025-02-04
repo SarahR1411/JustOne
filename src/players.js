@@ -1,4 +1,4 @@
-const prompt = require('prompt-sync')();
+const prompt = require('prompt-sync')({ sigint: true });
 
 /**
  * Creates an array of player objects, each with a unique ID and a default name
@@ -55,6 +55,7 @@ async function collectClues(activePlayer, allPlayers) {
         if (clue === null) {
           console.log(`${player.name} canceled input. Using empty clue.`);
           clue = '';
+          break;
         }
 
         if (clue) {
