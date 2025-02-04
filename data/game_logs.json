@@ -1,15 +1,1 @@
-[
-  {
-    "timestamp": "2025-02-04T13:07:52.390Z",
-    "round": 1,
-    "mysteryWord": "math",
-    "clues": [
-      "calculus",
-      "numbers",
-      "school",
-      "algebra"
-    ],
-    "validClues": [],
-    "result": "NO_VALID_CLUES"
-  }
-]
+[]

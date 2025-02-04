@@ -155,7 +155,7 @@ function applyJustOneScoring(result) {
   } else if (result === 'LOSE') {
     console.log('\n❌ Incorrect! Discarding this card AND the next card in the deck.');
     // In the official game you'd also remove the next card from the deck
-    // Here we do nothing special to avoid the bc there was an issue with .has()
+    // Here we do nothing special bc there was an issue with .has()
   } else if (result === 'PASS') {
     console.log('\nPlayer passes. Only this card is discarded.');
   }
