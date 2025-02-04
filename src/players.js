@@ -1,4 +1,5 @@
 const prompt = require('prompt-sync')({ sigint: true });
+const { isWordValid } = require('./validation');
 
 /**
  * Creates an array of player objects, each with a unique ID and a default name
@@ -41,30 +42,33 @@ function rotateActivePlayer(gameState) {
  * @param {object[]} allPlayers - Array of all players
  * @returns {object} - A map of { [playerId]: clueString }
  */
-async function collectClues(activePlayer, allPlayers) {
+async function collectClues(activePlayer, allPlayers, mysteryWord) {
   const clues = {};
 
   for (const player of allPlayers) {
     if (player.id !== activePlayer.id) {
       let clue;
+      let valid = false;
+
       do {
-        // Prompt user for input
-        clue = prompt(`${player.name}, enter your clue: `);
+        clue = prompt(`${player.name}, enter your clue: `).trim().toLowerCase();
 
-        //  handle user cancel if Ctrl+C is pressed
-        if (clue === null) {
-          console.log(`${player.name} canceled input. Using empty clue.`);
-          clue = '';
-          break;
+        if (clue.length === 0) {
+          console.log("❌ Clue cannot be empty. Try again.");
+          continue;
         }
 
-        if (clue) {
-          clue = clue.trim().toLowerCase();
+        if (!(await isWordValid(clue))) {
+          console.log(`📖 "${clue}" is not a recognized English word. Try again.`);
+          continue;
         }
-      } while (!clue || clue.length === 0);
+
+        valid = true; // Clue passed all checks
+
+      } while (!valid);
 
       clues[player.id] = clue;
-      console.clear(); // This hides the clue from the next player
+      console.clear(); // Clear screen for the next player's input
     }
   }
 

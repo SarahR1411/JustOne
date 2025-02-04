@@ -104,18 +104,19 @@ async function playRound() {
   revealMysteryWordToOtherPlayers(activePlayer, mysteryWord);
 
   // 4.4) Collect the clues from each non-active player
-  const allClues = await collectClues(activePlayer, gameState.players);
+  const allClues = await collectClues(activePlayer, gameState.players, mysteryWord);
 
   // 4.5) Validate the clues
-  const { validClues, invalidReason } = await validateClues(allClues, mysteryWord);
+  const { validClues, invalidReason, removedClues} = await validateClues(allClues, mysteryWord);
 
-  if (!validClues) {
-    console.log(`Validation failed: ${invalidReason}\nAll clues are invalid this round!`);
+  if (!validClues || validClues.length === 0) {
+    console.log(`🚨 ${invalidReason}`);
     logRound({
       round: gameState.currentRound,
       mysteryWord,
       clues: Object.values(allClues),
       validClues: [],
+      removedClues,
       result: 'NO_VALID_CLUES'
     });
     return;

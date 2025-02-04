@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "timestamp": "2025-02-04T15:23:33.944Z",
+    "round": 1,
+    "mysteryWord": "marriage",
+    "clues": [
+      "marriage",
+      "hello",
+      "hello",
+      "wedding"
+    ],
+    "validClues": [
+      "hello",
+      "wedding"
+    ],
+    "result": "WIN"
+  },
+  {
+    "timestamp": "2025-02-04T15:24:12.719Z",
+    "round": 2,
+    "mysteryWord": "duty",
+    "clues": [
+      "job",
+      "mission",
+      "dutiful",
+      "mission"
+    ],
+    "validClues": [
+      "job",
+      "mission"
+    ],
+    "result": "WIN"
+  }
+]
